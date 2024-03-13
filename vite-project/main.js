@@ -8,6 +8,9 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
+// 添加一个环境光
+const light = new THREE.AmbientLight( 0xffffff ); // 柔和的白光
+scene.add( light );
 
 // 添加鼠标事件监听器
 renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
@@ -39,38 +42,34 @@ function onDocumentMouseClick(event) {
         // 如果存在交点，intersects[0]是最接近摄像机的交点
         console.log(intersects[0]);
         // 例如，你可以选择高亮被点击的物体
-        intersects[0].object.material.color.set(0xff0000);
-        model = model.rotateY(Math.PI / 2)
+        // intersects[0].object.material.color.set(0xff0000);
+        model = model.rotateY(Math.PI / 4)
     }
 }
 
 const loader = new GLTFLoader();// 使用外部模型加载器
-let model; // 定义一个变量来持有您的模型
+let model,modelY; // 定义一个变量来持有您的模型
 // 加载glTF模型
-loader.load(
-  './test.glb',
-  (gltf) => {
-    // 添加基础材质
-    const material2 = new THREE.MeshBasicMaterial({ color: 0xff0ff });
 
-    // gltf.scene.traverse((child) => {
-    //   if (child.isMesh) {
-    //     child.material = material2;
-    //   }
-    // });
+loader.load( './door_body.glb', function ( gltf ) {
+	scene.add( gltf.scene );
+  model = gltf.scene
 
-    // 加载完成后，将模型添加到场景中
-    scene.add(gltf.scene);
-    model = gltf.scene; // 将加载的模型赋值给之前定义的变量
-    // model = model.rotateY(Math.PI / 2)
-  },
-  (xhr) => {
-    console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-  },
-  (error) => {
-    console.error('An error happened', error);
-  }
-);
+}, undefined, function ( error ) {
+
+	console.error( error );
+
+} );
+
+loader.load( './door_frame.glb', function ( gltf ) {
+	scene.add( gltf.scene );
+  modelY = gltf.scene
+
+}, undefined, function ( error ) {
+
+	console.error( error );
+
+} );
 
 // const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 // const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
