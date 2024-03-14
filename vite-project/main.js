@@ -38,10 +38,11 @@ exRloader.load(
 // 尝试绑定空对象
 // const helperObject = new THREE.AxesHelper();
 // scene.add(helperObject);
-const outer = new THREE.Group()
+let outer = new THREE.Group()
 
 
-
+// 交替开关
+let doorStatus = true;
 // 添加鼠标事件监听器
 renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
 renderer.domElement.addEventListener('click', onDocumentMouseClick, false);
@@ -74,11 +75,19 @@ function onDocumentMouseClick(event) {
     // 例如，你可以选择高亮被点击的物体
     // intersects[0].object.material.color.set(0xff0000);
     // model.rotateY(Math.PI / 2)
-    group.rotateY(-Math.PI / 2)
+    // 更新目标旋转值
+    if (doorStatus) {
+      targetRotationY -= rotationSpeed; // 逆时针旋转
+    } else {
+      targetRotationY += rotationSpeed; // 顺时针旋转
+    }
+    doorStatus = !doorStatus;
+
+    console.log(doorStatus)
   }
 }
 
-const group = new THREE.Group();
+let group = new THREE.Group();// const 关键字用于声明一个常量，这意味着一旦常量被赋值后，就不能再被重新赋值。
 let model,
   modelY = null; // 定义一个变量来持有您的模型
 const loader = new GLTFLoader();// 使用外部模型加载器
@@ -86,7 +95,7 @@ const loader = new GLTFLoader();// 使用外部模型加载器
 
 loader.load('../asset/door_body.glb', function (gltf) {
   model = gltf.scene
-  model.position.set(0 + 0.43, 0, 0)
+  model.position.set(0 + 0.42, 0, 0)
   group.add(model)
   scene.add(group)
   // 假设你想将原点移动到模型的底部
@@ -98,9 +107,13 @@ loader.load('../asset/door_body.glb', function (gltf) {
 }, undefined, function (error) {
   console.error(error);
 });
-group.position.set(0 - 0.43, 0, 0)
+group.position.set(0 - 0.44, 0, 0)
 // group.rotateY(0.25 * Math.PI)
 
+// 优化动画效果：
+const clock = new THREE.Clock();
+let targetRotationY = group.rotation.y;
+let rotationSpeed = Math.PI / 3; // 每次点击旋转的角度
 
 loader.load('../asset/door_frame.glb', function (gltf) {
   scene.add(gltf.scene);
@@ -117,6 +130,10 @@ camera.position.z = 5;
 function animate() {
   requestAnimationFrame(animate);
   renderer.render(scene, camera);
+  let delta = clock.getDelta(); // 获取时间差
+  let rotateAmount = (targetRotationY - group.rotation.y) * delta * 5; // 计算应该旋转的量，这里的5是一个可以调整的因子，用于控制旋转的速度
+  group.rotation.y += rotateAmount; // 插值旋转
+
   // model.rotation.x += 0.01;
   // model.rotation.y += 0.01;
   //   cube.rotation.x += 0.01;
