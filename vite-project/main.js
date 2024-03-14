@@ -82,28 +82,41 @@ function onDocumentMouseClick(event) {
       targetRotationY += rotationSpeed; // 顺时针旋转
     }
     doorStatus = !doorStatus;
+    modelX.rotateY(Math.PI / 1)
 
     console.log(doorStatus)
   }
 }
 
 let group = new THREE.Group();// const 关键字用于声明一个常量，这意味着一旦常量被赋值后，就不能再被重新赋值。
-let model,
+let model, modelX,
   modelY = null; // 定义一个变量来持有您的模型
 const loader = new GLTFLoader();// 使用外部模型加载器
 // 加载glTF模型
+
+loader.load('../asset/door_handler.glb', function (gltf) {
+  modelX = gltf.scene
+  // modelX.rotateY(Math.PI / 1)
+  modelX.position.set(0 + 0.42, 0, 0)
+  group.add(modelX)
+  scene.add(group)
+
+
+}, undefined, function (error) {
+  console.error(error);
+});
 
 loader.load('../asset/door_body.glb', function (gltf) {
   model = gltf.scene
   model.position.set(0 + 0.42, 0, 0)
   group.add(model)
   scene.add(group)
-  // 假设你想将原点移动到模型的底部
-  model.geometry.computeBoundingBox();
-  let boundingBox = model.geometry.boundingBox;
+  // // 假设你想将原点移动到模型的底部
+  // model.geometry.computeBoundingBox();
+  // let boundingBox = model.geometry.boundingBox;
 
   // 移动模型，使得底部对齐到原点
-  model.position.y = -boundingBox.min.y;
+  // model.position.y = -boundingBox.min.y;
 }, undefined, function (error) {
   console.error(error);
 });
