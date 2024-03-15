@@ -3,11 +3,14 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
+import * as TWEEN from 'tween.js';
+
 
 // 初始化场景
 const scene = new THREE.Scene();
 // 初始化摄像机
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
 // 初始化渲染器
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);// 设置好渲染画布的大小
@@ -60,11 +63,11 @@ let raycaster = new THREE.Raycaster();
 function onDocumentMouseClick(event) {
   // 更新鼠标位置
   onDocumentMouseMove(event);
-  // 只计算interactiveObjects中物体和射线的交点
-  let intersects = raycaster.intersectObjects(interactiveObjects, true);
-
   // 通过摄像机和鼠标位置更新射线
   raycaster.setFromCamera(mouse, camera);
+
+  // 只计算interactiveObjects中物体和射线的交点
+  let intersects = raycaster.intersectObjects(interactiveObjects, true);
 
   // // 计算物体和射线的交点
   // let intersects = raycaster.intersectObjects(scene.children);
@@ -88,8 +91,8 @@ function onDocumentMouseClick(event) {
       targetRotationY += rotationSpeed; // 顺时针旋转$
     }
     doorStatus = !doorStatus;
-
     console.log(doorStatus)
+    tween.start();
   }
 }
 
@@ -126,6 +129,16 @@ loader.load('../asset/door_body_full.glb', function (gltf) {
 group.position.set(0 - 0.44, 0, 0)
 // group.rotateY(0.25 * Math.PI)
 
+// 初始化摄像机动画
+let tween = new TWEEN.Tween(camera.position);// 首先为位置创建一个补间(tween)
+// 然后告诉 tween 我们想要在1000毫秒内以动画的形式移动 x 的位置
+tween.to({ y: 1, z: 2.5 }, 550)
+// 启动
+// tween.start();// 移动到回调函数内，即当监听到某个时间时候才触发动画
+
+
+
+
 // 优化动画效果：
 // 初始化动画参数（运动的主体 & 运动的内容和幅度）
 const clock = new THREE.Clock();
@@ -145,7 +158,7 @@ loader.load('../asset/door_frame.glb', function (gltf) {
 // 渲染循环
 // let angle = 0; //用于圆周运动计算的角度值
 // const R = 10; //相机圆周运动的半径
-camera.position.z = 5;
+
 
 function animate() {
   requestAnimationFrame(animate);
@@ -153,6 +166,7 @@ function animate() {
   let delta = clock.getDelta(); // 获取时间差
   let rotateAmount = (targetRotationY - group.rotation.y) * delta * 5; // 计算应该旋转的量，这里的5是一个可以调整的因子，用于控制旋转的速度
   group.rotation.y += rotateAmount; // 插值旋转
+  TWEEN.update(); // 更新所有tween动画
 
 
   // angle += 0.01;
