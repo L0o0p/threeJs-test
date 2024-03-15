@@ -77,36 +77,31 @@ function onDocumentMouseClick(event) {
     // model.rotateY(Math.PI / 2)
     // 更新目标旋转值
     if (doorStatus) {
-      targetRotationY -= rotationSpeed; // 逆时针旋转
+      targetRotationY -= rotationSpeed, groupX.rotateZ(Math.PI / 4); // 逆时针旋转
     } else {
-      targetRotationY += rotationSpeed; // 顺时针旋转
+      targetRotationY += rotationSpeed, groupX.rotateZ(-Math.PI / 4); // 顺时针旋转$
     }
     doorStatus = !doorStatus;
-    modelX.rotateY(Math.PI / 1)
 
     console.log(doorStatus)
   }
 }
 
 let group = new THREE.Group();// const 关键字用于声明一个常量，这意味着一旦常量被赋值后，就不能再被重新赋值。
-let model, modelX,
+let groupX = new THREE.Group();// const 关键字用于声明一个常量，这意味着一旦常量被赋值后，就不能再被重新赋值。
+let model, room,
   modelY = null; // 定义一个变量来持有您的模型
 const loader = new GLTFLoader();// 使用外部模型加载器
 // 加载glTF模型
-
-loader.load('../asset/door_handler.glb', function (gltf) {
-  modelX = gltf.scene
-  // modelX.rotateY(Math.PI / 1)
-  modelX.position.set(0 + 0.42, 0, 0)
-  group.add(modelX)
-  scene.add(group)
-
-
+loader.load('../asset/door_room.glb', function (gltf) {
+  room = gltf.scene
+  room.rotateY(Math.PI)
+  scene.add(room)
 }, undefined, function (error) {
   console.error(error);
 });
 
-loader.load('../asset/door_body.glb', function (gltf) {
+loader.load('../asset/door_body_full.glb', function (gltf) {
   model = gltf.scene
   model.position.set(0 + 0.42, 0, 0)
   group.add(model)
@@ -138,6 +133,9 @@ loader.load('../asset/door_frame.glb', function (gltf) {
 
 });
 
+// 渲染循环
+let angle = 0; //用于圆周运动计算的角度值
+const R = 10; //相机圆周运动的半径
 camera.position.z = 5;
 
 function animate() {
@@ -146,6 +144,19 @@ function animate() {
   let delta = clock.getDelta(); // 获取时间差
   let rotateAmount = (targetRotationY - group.rotation.y) * delta * 5; // 计算应该旋转的量，这里的5是一个可以调整的因子，用于控制旋转的速度
   group.rotation.y += rotateAmount; // 插值旋转
+
+
+  angle += 0.01;
+  // 相机y坐标不变，在XOZ平面上做圆周运动
+  camera.position.x = R * Math.cos(angle);
+  camera.position.z = R * Math.sin(angle);
+
+  // 相机圆周运动过程，如果希望视线始终指向圆心，位置改变后必须重新执行lookAt指向圆心
+  camera.lookAt(0, 0, 0);
+
+  renderer.render(scene, camera);
+
+
 
   // model.rotation.x += 0.01;
   // model.rotation.y += 0.01;
