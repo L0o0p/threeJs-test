@@ -2,7 +2,6 @@ import * as THREE from 'three';
 // 导入外部模型glt文件
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import * as TWEEN from 'tween.js';
 
 
@@ -16,11 +15,6 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);// 设置好渲染画布的大小
 document.body.appendChild(renderer.domElement);
 
-// 添加一个环境光
-// const light = new THREE.AmbientLight(0xffffff); // 柔和的白光
-// scene.add(light);
-// const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
-// scene.add(hemiLight);
 // 创建一个EXR加载器
 const exRloader = new EXRLoader();
 exRloader.load(
@@ -28,9 +22,6 @@ exRloader.load(
   function (texture) {
     texture.mapping = THREE.EquirectangularReflectionMapping;
     scene.environment = texture; // 将加载的EXR纹理设置为场景的环境贴图
-
-    // 你也可以在这里创建物体，应用材质等
-    // ...
 
     // 然后渲染场景
     renderer.render(scene, camera);
@@ -44,6 +35,7 @@ exRloader.load(
 
 // 交替物体运动的开合
 let doorStatus = true;
+let cameraStatus = true;
 // 添加鼠标事件监听器
 renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
 renderer.domElement.addEventListener('click', onDocumentMouseClick, false);
@@ -68,10 +60,26 @@ function onDocumentMouseClick(event) {
 
   // 只计算interactiveObjects中物体和射线的交点
   let intersects = raycaster.intersectObjects(interactiveObjects, true);
+  let intersects2 = raycaster.intersectObjects(interactiveObjects2, true);
 
-  // // 计算物体和射线的交点
-  // let intersects = raycaster.intersectObjects(scene.children);
+  // 点击墙的回调
+  if (intersects2.length > 0) {
+    // // 如果存在交点，intersects[0]是最接近摄像机的交点
+    // console.log(intersects[0]);
 
+    // 这里确保被点击的是room
+    let selectedObject2 = intersects2[0].object;
+    if (cameraStatus) {
+      tween.start()// 逆时针旋转
+    } else {
+      // 未定义
+    }
+    cameraStatus = !cameraStatus;
+    console.log('下一次应该走近？', cameraStatus)
+  }
+
+
+  // 点击门的回调：开合门
   if (intersects.length > 0) {
     // // 如果存在交点，intersects[0]是最接近摄像机的交点
     // console.log(intersects[0]);
@@ -81,9 +89,7 @@ function onDocumentMouseClick(event) {
     while (selectedObject && !selectedObject.userData.isDoorBody) {
       selectedObject = selectedObject.parent;
     }
-    // 例如，你可以选择高亮被点击的物体
-    // intersects[0].object.material.color.set(0xff0000);
-    // doorBody.rotateY(Math.PI / 2)
+
     // 更新目标旋转值
     if (doorStatus) {
       targetRotationY -= rotationSpeed; // 逆时针旋转
@@ -91,11 +97,12 @@ function onDocumentMouseClick(event) {
       targetRotationY += rotationSpeed; // 顺时针旋转$
     }
     doorStatus = !doorStatus;
-    console.log(doorStatus)
-    tween.start();
+    console.log('下一次应该开？', doorStatus)
   }
 }
-
+// 存储可交互的物体
+let interactiveObjects = [];
+let interactiveObjects2 = [];
 // 初始化模型
 let group = new THREE.Group();// const 关键字用于声明一个常量，这意味着一旦常量被赋值后，就不能再被重新赋值。
 let doorBody, room,
@@ -107,12 +114,12 @@ loader.load('../asset/door_room.glb', function (gltf) {
   room = gltf.scene
   room.rotateY(Math.PI)
   scene.add(room)
+  interactiveObjects2.push(room);
+  console.log('interactiveObjects2[0]', '是', interactiveObjects2[0])
 }, undefined, function (error) {
   console.error(error);
 });
 
-// 存储所有可交互的物体
-let interactiveObjects = [];
 // 加载门板模型
 loader.load('../asset/door_body_full.glb', function (gltf) {
   doorBody = gltf.scene
@@ -122,6 +129,7 @@ loader.load('../asset/door_body_full.glb', function (gltf) {
 
   // 模型加载完成后，将门体添加到可交互物体数组中
   interactiveObjects.push(doorBody);
+  console.log('interactiveObjects[0]', '是', interactiveObjects[0])
 
 }, undefined, function (error) {
   console.error(error);
@@ -176,9 +184,6 @@ function animate() {
 
   // // 相机圆周运动过程，如果希望视线始终指向圆心，位置改变后必须重新执行lookAt指向圆心
   // camera.lookAt(0, 0, 0);
-
-  renderer.render(scene, camera);
-
 
 
   // doorBody.rotation.x += 0.01;
