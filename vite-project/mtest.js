@@ -13,7 +13,7 @@ import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 const scene = new THREE.Scene();
 // 初始化摄像机
 const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 5;
+camera.position.z = 12;// 相机的初识位置
 // 初始化渲染器
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);// 设置好渲染画布的大小
@@ -28,13 +28,19 @@ loader.load('./asset/city.exr', function (texture) {
   texture.encoding = THREE.LinearEncoding;
 
   // 初始化模型
+  let group = new THREE.Group();//初始化控制器
   const geometry = new THREE.SphereGeometry(50, 50, 50)
   geometry.scale(-1, 1, 1)// 这样调整后才会有期望的空间感
   // const material = new THREE.MeshBasicMaterial({ wireframe: true })//查看线框
   const material = new THREE.MeshBasicMaterial({ map: texture });// 使用导入的贴图
   const cube = new THREE.Mesh(geometry, material)
 
-  scene.add(cube)
+  group.add(cube)// 使用控制器，也可以不使用，就像blender的空对象，只是为了增加可编辑性
+  // 调整初始角度
+  group.rotateY(60 * Math.PI / 180)
+  group.rotateX(0 * Math.PI / 180)
+  group.rotateZ(0 * Math.PI / 180)
+  scene.add(group)
 })
 
 // 初始化坐标系
@@ -43,6 +49,14 @@ scene.add(ax)
 
 // 初始化镜头控制器
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.zoomSpeed = 3// 镜头滚动速度
+controls.maxDistance = 85 //限制滚动距离
+controls.minDistance = 20 //限制滚动距离
+// 自动旋转
+// controls.autoRotate = true // 开启自动旋转
+controls.autoRotateSpeed = 0.5 // 自动旋转速度
+// 运动阻尼感
+controls.enableDamping = true
 
 // 渲染和动画
 function animate() {
