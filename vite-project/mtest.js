@@ -1,23 +1,41 @@
 //CaseList:
 // 1. 引入坐标轴
 // 2. 视角控制器
-// 3. 画布的响应式调整 <-|
-// 4. 题图加载
-// 5. 全景浏览实现
-// 6. 全景浏览的距离限制
+// 3. 画布的响应式调整 
+// 4. 贴图加载 -> 全景浏览实现 <<-|
+// 5. 全景浏览的距离限制和其他调整
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
 
 // 初始化场景
 const scene = new THREE.Scene();
 // 初始化摄像机
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 20;
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.z = 5;
 // 初始化渲染器
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);// 设置好渲染画布的大小
 document.body.appendChild(renderer.domElement)
+
+// 初始化环境贴图
+const loader = new EXRLoader();
+// 使用loader的时候，相关的模型必须在loader对象内部创建
+loader.load('./asset/city.exr', function (texture) {
+  texture.minFilter = THREE.NearestFilter;
+  texture.magFilter = THREE.NearestFilter;
+  texture.encoding = THREE.LinearEncoding;
+
+  // 初始化模型
+  const geometry = new THREE.SphereGeometry(50, 50, 50)
+  geometry.scale(-1, 1, 1)// 这样调整后才会有期望的空间感
+  // const material = new THREE.MeshBasicMaterial({ wireframe: true })//查看线框
+  const material = new THREE.MeshBasicMaterial({ map: texture });// 使用导入的贴图
+  const cube = new THREE.Mesh(geometry, material)
+
+  scene.add(cube)
+})
 
 // 初始化坐标系
 const ax = new THREE.AxesHelper(50)
@@ -25,13 +43,6 @@ scene.add(ax)
 
 // 初始化镜头控制器
 const controls = new OrbitControls(camera, renderer.domElement);
-
-// 初始化模型
-const geometry = new THREE.SphereGeometry(5, 50, 50)
-const material = new THREE.MeshBasicMaterial({ wireframe: true })
-const cube = new THREE.Mesh(geometry, material)
-
-scene.add(cube)
 
 // 渲染和动画
 function animate() {
