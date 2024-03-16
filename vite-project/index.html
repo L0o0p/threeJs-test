@@ -6,19 +6,27 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <script src="./build/three.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" type="text/css" href="./styleX.css">
   <title>Vite App</title>
 </head>
 
 <body>
-  <div id="app"></div>
+  <div class="absolute">
+    <button id="app" class="btn">Scene-1</button>
+    <button id="app2" class="btn">Scene-2</button>
+  </div>
+  <!-- Loading Indicator Placeholder -->
+  <div id="loading-indicator" style="display: none;">Loading...</div>
+
+
   <script type="module" src="/mtest.js"></script>
   <!-- 重制页面边距留白为0 -->
-  <style>
+  <!-- <style>
     * {
       margin: 0;
       padding: 0;
     }
-  </style>
+  </style> -->
 </body>
 
 </html>
